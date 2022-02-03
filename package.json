@@ -1,0 +1,30 @@
+{
+  "name": "ndse-10-book-library",
+  "version": "1.0.0",
+  "description": "приложение «библиотека»",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rpu6HuK87/ndse-10-book-library.git"
+  },
+  "author": "Ruslan Akhmetov <rr.akhmetoff@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rpu6HuK87/ndse-10-book-library/issues"
+  },
+  "homepage": "https://github.com/rpu6HuK87/ndse-10-book-library#readme",
+  "devDependencies": {
+    "dotenv": "^15.0.0",
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "express": "^4.17.2",
+    "express-form-data": "^2.0.17",
+    "node-unique-id-generator": "^0.1.0"
+  }
+}
