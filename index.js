@@ -1,16 +1,23 @@
 const express = require('express')
-const booksRouter = require('./routes/books')
+const booksApi = require('./routes/api')
+const booksWeb = require('./routes/web')
 
 const error404 = require('./middleware/error404')
 const error500 = require('./middleware/error500')
 
 const app = express()
 
-app.use('/api/books', booksRouter)
+app.set('view engine', 'ejs')
+
+app.use('/api/books', booksApi)
+app.use('/books', booksWeb)
 
 //POST - auth
 app.post('/api/user/login', (req, res) => {  
   res.status(201).json({ id: 1, mail: "rr.akhmetoff@gmail.com" })
+})
+app.get('/', (req, res) => {
+  res.status(307).redirect('/books')
 })
 
 app.use(error404)
