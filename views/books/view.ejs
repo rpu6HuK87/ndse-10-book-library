@@ -7,6 +7,7 @@
                 <p class="card-text"><%= book.description %>.</p>
 
                 <div class="text-right">
+                    <i class="fa fa-eye" aria-hidden="true"></i> <%= viewcount %>
                     <a class="btn btn-sm btn-primary" href="/books/update/<%= book.id %>">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </a>

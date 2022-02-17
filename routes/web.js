@@ -2,12 +2,18 @@ const express = require('express')
 const router = express.Router()
 const uploadBook = require('../middleware/upload-book')
 
+const axios = require('axios')
+
 const { Book } = require('../models/Book')
 const store = {
 	books: []
 }
 store.books.push(new Book('Супер книга', 'О том, о сем', 'Винтик и Шпунтик', '', '', 'superbook', 'super-book.jpg'))
 //console.log(store.books)
+
+/* async function incrCount(bookid) {
+	return await 
+} */
 
 //GET
 router.get('/', (req, res) => {
@@ -35,13 +41,18 @@ router.get('/update/:id', (req, res) => {
 			page: 'form'
 		})
 })
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
+	
 	const bookid = store.books.findIndex(book => book.id === req.params.id)
 	const book = store.books[bookid]
+	const counter = await axios.post('http://counter/counter/' + book.id + '/incr')
+	console.log(counter.data)
+	
 	res.render("books/index", {
 		title: book.title,
 		book: book,
-		page: 'view'
+		page: 'view',
+		viewcount: counter.data.count
 	})	
 })
 
