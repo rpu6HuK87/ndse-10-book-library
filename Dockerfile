@@ -1,5 +1,6 @@
 FROM node:alpine
 WORKDIR /code
-COPY . .
+COPY package*.json ./
+COPY ./src ./src
 RUN npm install
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
