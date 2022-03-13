@@ -64,7 +64,7 @@ router.get('/:id/download', async (req, res) => {
   let book
   try {
     book = await Book.findById(req.params.id).select('fileBook')
-    if(book) res.download(__dirname + '/../public/books/' + book.fileBook)
+    if(book) res.download(__dirname + '/../../public/books/' + book.fileBook)
     else res.status(404).render('index', {title: 'Ошибка 404 - запрашиваемый ресурс не найден', page: false})
   } catch(e) {
     console.log(e)

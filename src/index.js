@@ -1,30 +1,27 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
 require('dotenv').config()
 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
-//const crypto = require('crypto')
+const bcrypt = require('bcrypt')
 
 const User = require('./models/User')
 const salt = process.env.SALT || "solenayaSol'"
 console.log(salt)
 
-function verify (email, password, done) {
-  User.findOne({ email: email}, function (err, user){
+function verify(email, password, done) {
+  User.findOne({ email: email}, function (err, user) {
     if(err) return done(err)
-    if(!user) return done(null, false)
-
-    crypto.pbkdf2(password, salt, 310000, 32, 'sha256', function(err, hashedPassword) {
+    if(!user) return done(null, false, {message: 'Неверные логин или пароль'})
+    bcrypt.compare(password, user.pwdhash, function(err, result) {
       if(err) return done(err)
-      if(!crypto.timingSafeEqual(user.pwdhash, hashedPassword)) {
-        return done(null, false, { message: 'Incorrect username or password.' })
-      }
-      return done(null, user)
+      if(result) return done(null, user)
+      else return done(null, false, { message: 'Неверные логин или пароль' })
     })
-
   })
 }
 
@@ -54,6 +51,7 @@ const app = express()
 app.set('view engine', 'ejs')
 app.set('views', './src/views')
 
+app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookieParser())
 app.use(session({
   cookie: {
@@ -90,22 +88,22 @@ app.use('/api/user', userApi)
 app.use('/books', booksWeb)
 app.use('/user', userWeb)
 
-app.use(error404)
-app.use(error500)
-
 app.get('/', (req, res) => {
   res.status(307).redirect('/books')
 })
+app.get('/logout',  (req, res) => {
+  req.logout()
+  res.redirect('/user/login')
+})
 
-
+app.use(error404)
+app.use(error500)
 
 const PORT = process.env.PORT || 3000
 const DBNAME = process.env.DB_NAME
 const DBUSER = process.env.DB_USERNAME
 const DBPASS = process.env.DB_PASSWORD
 const DBURL = process.env.DB_URL
-
-console.log(DBUSER)
 
 ;(async () => {
   try {

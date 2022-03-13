@@ -1,4 +1,9 @@
 <form action="/api/user/register" method="post">
+  <% if(typeof badmsg != 'undefined' || badmsg) { %>
+    <div style="color:red; text-shadow:0px 1px 0px #ccc">
+      <%= badmsg %>
+    </div>
+  <% } %>
   <div>
     <label>Ваше имя</label>
     <br />
