@@ -1,0 +1,24 @@
+<form action="/api/user/register" method="post">
+  <div>
+    <label>Ваше имя</label>
+    <br />
+    <input type="text" name="name" />
+  </div>
+  <div>
+      <label>Email</label>
+      <br />
+      <input type="text" name="email" /><br />
+  </div>
+  <div>
+      <label>Пароль</label>
+      <br />
+      <input type="password" name="password" />
+  </div>  
+  <div>
+    <br />
+    <input type="submit" value="Зарегистрироваться" />
+  </div>
+</form>
+<hr />
+<a href="/user/login" style="margin-right:10px">Вход</a>
+<a href="/user/forgetpwd">Забыли пароль?</a>
