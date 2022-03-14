@@ -1,4 +1,10 @@
 const express = require('express')
+const app = express()
+const http = require('http')
+const server = http.createServer(app)
+const { Server } = require('socket.io')
+const io = new Server(server)
+
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 require('dotenv').config()
@@ -46,14 +52,13 @@ passport.deserializeUser(function (id, cb) {
   })
 })
 
-const app = express()
-
 app.set('view engine', 'ejs')
 app.set('views', './src/views')
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookieParser())
-app.use(session({
+
+const sessionMW = session({
   cookie: {
     path: '/',
     httpOnly: true,
@@ -64,7 +69,9 @@ app.use(session({
   secret: process.env.COOKIE_SECRET,
   resave: false,
   saveUninitialized: false
-}))
+})
+app.use(sessionMW)
+io.use((socket, next) => {sessionMW(socket.request, {}, next)})
 
 app.use(passport.initialize())
 app.use(passport.session())
@@ -96,6 +103,31 @@ app.get('/logout',  (req, res) => {
   res.redirect('/user/login')
 })
 
+//WS
+io.on('connection', async (socket) => {
+  const { id } = socket
+  const uid = socket.request.session.passport.user
+  const user = await User.findById(uid)
+  console.log(`Веб-сокет клиент с ID ${id} подключился`)
+
+  
+  console.log(user)
+
+  // подключение к комнате книги
+  const { roomName } = socket.handshake.query
+  console.log(`Подключение к комнате ${roomName}`)
+  socket.join(roomName)
+  socket.on('message-to-room', (msg) => {
+    msg.type = `room: ${roomName}`
+    socket.to(roomName).emit('message-to-room', msg)
+    //socket.emit('message-to-room', msg)
+  })
+
+  socket.on('disconnect', () => {
+    console.log(`Socket disconnected: ${id}`)
+  })
+})
+
 app.use(error404)
 app.use(error500)
 
@@ -115,7 +147,7 @@ const DBURL = process.env.DB_URL
       useUnifiedTopology: true
     })
 
-    app.listen(PORT, () => console.log(`Сервер запущен на ${PORT} порту`))
+    server.listen(PORT, () => console.log(`Сервер запущен на ${PORT} порту`))
   } catch(e) {
     console.log(e)
   }
