@@ -39,12 +39,14 @@ router.get('/update/:id', async (req, res) => {
 })
 router.get('/:id', async (req, res) => {
   let book
+  console.log('trying')
   try {
+    
     book = await Book.findById(req.params.id).select('-__v')
     if(book) {
       let counter
       try {
-        counter = await axios.post('http://counter/counter/' + book.id + '/incr')
+        counter = await axios.post('http://counter/counter/' + req.params.id + '/incr')
         counter = counter.data.count
       } catch(e) {
         counter = '#'

@@ -15,9 +15,10 @@ const client = new redis.createClient({ url: REDIS_URL });
 
 app.post('/counter/:bookid/incr', async (req, res) => {
   const { bookid } = req.params
+  console.log('post', req.params)
   try {
     const count = await client.incr(bookid)
-    //console.log(count)
+    console.log('post', count)
     res.json({count: count})
     
   } catch(err) {
@@ -27,9 +28,15 @@ app.post('/counter/:bookid/incr', async (req, res) => {
 
 app.get('/counter/:bookid', async (req, res) => {
   const { bookid } = req.params
-  //console.log(bookid)
-  const count = await client.get(bookid, redis.print)
-  res.json({count: count})
+  console.log('get', req.params)
+  try {
+    const count = await client.get(bookid, redis.print)
+    console.log('get', count)
+    res.json({count: count})    
+  } catch(err) {
+    res.status(500).json({error: true, code: 500, msg: 'Ошибка REDIS', payload: err})
+  }
+  
 })
 
 app.listen(PORT, () => console.log(`BOOKСOUTER listen on ${PORT} port`))

@@ -1,9 +1,9 @@
 <div class="row">
-    <div class="col-sm-8">
+    <div class="col-sm-6">
         <div class="card">
             <div class="card-body">
 
-                <h5 class="card-title"><%= book.title %></h5>
+                <h5 class="card-title">О книге</h5>
                 <p class="card-text"><%= book.description %>.</p>
 
                 <div class="text-right">
@@ -19,9 +19,47 @@
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
                     </form>
-                </div>
+                </div>               
 
             </div>
         </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-8">
+              <h5>Как тебе книга?</h5>
+            </div>
+            <div class="col-4 text-right">
+              <span id="userlist" style="margin-right: 10px;" title="">
+                <i class="fa fa-user text-info" aria-hidden="true"></i>
+                <span id="userscnt" class="badge badge-success"></span>
+              </span>
+              <span id="connstate" class="">подключение...</span>
+            </div>
+            
+          </div>
+          
+          <div class="chat">
+            <div id="chathist" class="chat-history" style="overflow-y: scroll;max-height: 500px;">
+              <ul id="chatbox" class="m-b-0">
+                  
+              </ul>
+            </div>
+            <div class="chat-message clearfix">
+              <form id="formmsg" class="row">
+                <div class="input-group mb-0">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fa fa-send"></i></span>
+                  </div>
+                  <input id="mymsg" type="text" class="form-control col" placeholder="Текст сообшения.." />
+                  <input style="margin-left: 10px" type="submit" value="Отправить" />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 </div>

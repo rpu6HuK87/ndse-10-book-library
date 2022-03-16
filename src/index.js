@@ -9,6 +9,17 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 require('dotenv').config()
 
+const redis = require('redis')
+const REDIS_URL = process.env.REDIS_URL || 'redis://storage:6379'
+const client = new redis.createClient({ url: REDIS_URL })
+console.log(REDIS_URL)
+
+;(async () => {  
+  await client.connect()
+})()
+
+
+
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const passport = require('passport')
@@ -71,29 +82,34 @@ const sessionMW = session({
   saveUninitialized: false
 })
 app.use(sessionMW)
+//
 io.use((socket, next) => {sessionMW(socket.request, {}, next)})
 
-app.use(passport.initialize())
-app.use(passport.session())
 
 
-
-const booksApi = require('./routes/api/books')
-const userApi = require('./routes/api/user')
-const booksWeb = require('./routes/web/books')
-const userWeb = require('./routes/web/user')
 
 
 const isAuthenticated = require('./middleware/isAuthenticated')
 const error404 = require('./middleware/error404')
 const error500 = require('./middleware/error500')
 
+
+
+app.use(passport.initialize())
+app.use(passport.session())
 app.use(isAuthenticated)
+
+const booksApi = require('./routes/api/books')
+const userApi = require('./routes/api/user')
+const booksWeb = require('./routes/web/books')
+const userWeb = require('./routes/web/user')
 
 app.use('/api/books', booksApi)
 app.use('/api/user', userApi)
 app.use('/books', booksWeb)
 app.use('/user', userWeb)
+
+app.use('/static', express.static(__dirname + '/public/assets'))
 
 app.get('/', (req, res) => {
   res.status(307).redirect('/books')
@@ -104,26 +120,49 @@ app.get('/logout',  (req, res) => {
 })
 
 //WS
+let connectedClients = []
 io.on('connection', async (socket) => {
-  const { id } = socket
-  const uid = socket.request.session.passport.user
-  const user = await User.findById(uid)
-  console.log(`Веб-сокет клиент с ID ${id} подключился`)
-
   
-  console.log(user)
-
+  const { id } = socket
+  const sess = socket.request.session
+  const user = (sess.passport?.user) ? await User.findById(sess.passport.user) : false
+  if(!user) {
+    socket.emit('logout-client')
+    return
+  }
+  console.log(`Веб-сокет клиент с ID ${id} подключился`)
+  
   // подключение к комнате книги
   const { roomName } = socket.handshake.query
   console.log(`Подключение к комнате ${roomName}`)
   socket.join(roomName)
+  if(roomName in connectedClients)  connectedClients[roomName].push(user.name)
+  else connectedClients[roomName] = [user.name]
+  //await client.del(roomName)
+  let allmsgs
+  try {
+    allmsgs = await client.lRange('wsroom_' + roomName, 0, -1)
+  } catch {
+    await client.del('wsroom_' + roomName)
+    allmsgs = false
+  }
+  
+  //if(allmsgs) await client.del(roomName)
+  //console.log(allmsgs)
+  socket.emit('all-messages', {allmsgs, yourname: user.name, userlist: connectedClients[roomName]})
+  socket.to(roomName).emit('someone-connected-disconnected', connectedClients[roomName])
+
   socket.on('message-to-room', (msg) => {
-    msg.type = `room: ${roomName}`
+    msg.username = user.name ? user.name : 'Некто'    
+    socket.emit('message-to-room-sended')
     socket.to(roomName).emit('message-to-room', msg)
     //socket.emit('message-to-room', msg)
+    client.rPush('wsroom_' + roomName, JSON.stringify(msg))
   })
 
   socket.on('disconnect', () => {
+    connectedClients[roomName] = connectedClients[roomName].filter(name => name != user.name)
+    socket.to(roomName).emit('someone-connected-disconnected', connectedClients[roomName])
     console.log(`Socket disconnected: ${id}`)
   })
 })

@@ -39,7 +39,7 @@ router.post('/register',  (req, res) => {
           res.redirect('/user/login')
         } catch (e) {
           console.error(e)
-          res.status(500).json('Ошибка сервера')
+          res.status(500).json('Ошибка сервера. Все поля заполнили?')
         }
       }) 
     }
