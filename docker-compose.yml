@@ -1,28 +1,11 @@
 version: '3.7'
 
 services:
-
-  storage:
-    restart: always
-    image: redis      
-
-  counter:
-    restart: always
-    build: ./counter
-    environment:
-      - REDIS_URL=redis://storage
-    ports:
-      - 8082:80  
-    depends_on:
-      - storage
-
   db:
     restart: always
     image: mongo
     volumes:
       - ./database:/data/db
-    ports:      
-      - 27017:27017  
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${DB_USERNAME:-root}
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD:-password}
@@ -38,21 +21,16 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${DB_USERNAME:-root}
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${DB_PASSWORD:-password}
     depends_on:
-      - storage        
+      - db        
 
   booklibrary:
     restart: always
     environment:
-      - PORT=3001
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_URL=${DB_URL_D}
-      - COOKIE_SECRET=${COOKIE_SECRET}
-      - SALT=${SALT}
+      - DB_URL=${DB_URL}
     build: .
-    #volumes:
-    #  - ./src:/code/src
     ports:      
-      - 8080:3001
+      - 8080:8080
       
